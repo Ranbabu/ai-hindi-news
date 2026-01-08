@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Hindi News Generator</title>
+
+<style>
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:#020617;
+  color:#e5e7eb;
+  font-family:system-ui,-apple-system;
+  padding:14px;
+}
+.card{
+  border:1px solid #1e293b;
+  border-radius:16px;
+  padding:16px;
+  background:rgba(2,6,23,.95);
+}
+h1{
+  text-align:center;
+  margin:0 0 6px;
+  font-size:20px;
+}
+p{
+  text-align:center;
+  font-size:13px;
+  opacity:.7;
+}
+input{
+  width:100%;
+  padding:12px;
+  margin-top:8px;
+  background:#020617;
+  border:1px solid #1e293b;
+  border-radius:12px;
+  color:#fff;
+  font-size:14px;
+}
+button{
+  width:100%;
+  margin-top:12px;
+  padding:14px;
+  border-radius:14px;
+  border:2px solid #38bdf8;
+  background:transparent;
+  color:#38bdf8;
+  font-size:16px;
+  font-weight:600;
+  cursor:pointer;
+  transition:.2s;
+}
+button:active{
+  transform:scale(.96);
+  background:rgba(56,189,248,.15);
+}
+.loader{
+  display:none;
+  text-align:center;
+  margin:10px 0;
+  font-size:13px;
+  opacity:.7;
+}
+#output{
+  white-space:pre-wrap;
+  font-size:14px;
+  line-height:1.6;
+}
+.footer{
+  text-align:center;
+  font-size:11px;
+  opacity:.5;
+  margin-top:14px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+<h1>📰 AI Hindi News Script</h1>
+<p>India Real-Time News • GitHub Pages Ready</p>
+
+<input id="short" placeholder="🔴 Breaking Headline (छोटी)" />
+<input id="long" placeholder="📰 Detailed Headline (बड़ी)" />
+
+<button onclick="generate()">Generate News Script</button>
+
+<div class="loader" id="loader">⏳ Script generate ho rahi hai…</div>
+
+<div class="card" style="margin-top:12px">
+<div id="output">Yahan Hindi news script aayegi…</div>
+</div>
+</div>
+
+<div class="footer">
+Free Open-Source AI • Fair Use
+</div>
+
+<script>
+async function generate(){
+  const s=document.getElementById("short").value.trim();
+  const l=document.getElementById("long").value.trim();
+  if(!s && !l){
+    alert("Kam se kam ek headline likhiye");
+    return;
+  }
+
+  const out=document.getElementById("output");
+  const loader=document.getElementById("loader");
+  out.textContent="";
+  loader.style.display="block";
+
+  const prompt = `
+आप एक भारतीय टीवी न्यूज़ एंकर हैं।
+
+ब्रेकिंग हेडलाइन:
+${s}
+
+डिटेल हेडलाइन:
+${l}
+
+निर्देश:
+- पूरी तरह शुद्ध हिंदी
+- भारत की रियल न्यूज़ शैली
+- अगर सिर्फ ब्रेकिंग है → छोटा स्क्रिप्ट
+- अगर डिटेल है → लंबा स्क्रिप्ट
+- प्रोफेशनल और विश्वसनीय भाषा
+
+अब पूरी न्यूज़ स्क्रिप्ट लिखिए:
+`;
+
+  try{
+    const res = await fetch("https://horde.koboldai.net/api/v2/generate/text",{
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json",
+        "accept":"application/json"
+      },
+      body:JSON.stringify({
+        prompt: prompt,
+        max_length: 1800,
+        temperature: 0.7,
+        top_p: 0.95
+      })
+    });
+
+    const data = await res.json();
+    loader.style.display="none";
+
+    if(data.generations){
+      out.textContent = data.generations.map(g=>g.text).join("\n\n");
+    }else{
+      out.textContent = "❌ Model busy hai, thodi der baad try karein";
+    }
+
+  }catch(e){
+    loader.style.display="none";
+    out.textContent = "❌ Network issue – GitHub Pages par hi kaam karta hai";
+  }
+}
+</script>
+
+</body>
+</html>
