@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AI Hindi News Generator</title>
+<title>AI Hindi Latest News Generator</title>
 
 <style>
 *{box-sizing:border-box}
@@ -20,17 +20,9 @@ body{
   padding:16px;
   background:rgba(2,6,23,.95);
 }
-h1{
-  text-align:center;
-  margin:0 0 6px;
-  font-size:20px;
-}
-p{
-  text-align:center;
-  font-size:13px;
-  opacity:.7;
-}
-input{
+h1{text-align:center;margin:0 0 6px;font-size:20px}
+p{text-align:center;font-size:13px;opacity:.7}
+select,input{
   width:100%;
   padding:12px;
   margin-top:8px;
@@ -57,109 +49,105 @@ button:active{
   transform:scale(.96);
   background:rgba(56,189,248,.15);
 }
-.loader{
-  display:none;
-  text-align:center;
-  margin:10px 0;
-  font-size:13px;
-  opacity:.7;
-}
-#output{
-  white-space:pre-wrap;
-  font-size:14px;
-  line-height:1.6;
-}
-.footer{
-  text-align:center;
-  font-size:11px;
-  opacity:.5;
-  margin-top:14px;
-}
+.loader{text-align:center;margin:10px 0;display:none;opacity:.7}
+#output{white-space:pre-wrap;font-size:14px;line-height:1.6}
+.footer{text-align:center;font-size:11px;opacity:.5;margin-top:14px}
 </style>
 </head>
 
 <body>
 
 <div class="card">
-<h1>📰 AI Hindi News Script</h1>
-<p>India Real-Time News • GitHub Pages Ready</p>
+<h1>📰 AI Hindi Latest News</h1>
+<p>Category + Topic • Top News • Randomized</p>
 
-<input id="short" placeholder="🔴 Breaking Headline (छोटी)" />
-<input id="long" placeholder="📰 Detailed Headline (बड़ी)" />
+<select id="category">
+<option value="रेलवे">🚆 Railway</option>
+<option value="राजनीति">🏛️ Politics</option>
+<option value="टेक्नोलॉजी">📱 Technology</option>
+<option value="शिक्षा">🎓 Education</option>
+<option value="नौकरी">💼 Jobs</option>
+<option value="खेल">🏏 Sports</option>
+</select>
 
-<button onclick="generate()">Generate News Script</button>
+<select id="count">
+<option value="5">Top 5 News</option>
+<option value="10">Top 10 News</option>
+<option value="25">Top 25 News</option>
+</select>
 
-<div class="loader" id="loader">⏳ Script generate ho rahi hai…</div>
+<input id="topic" placeholder="Optional topic (जैसे: IRCTC, Budget, Election)" />
+
+<button onclick="generate()">Search Latest News</button>
+
+<div class="loader" id="loader">⏳ Latest news generate ho rahi hai…</div>
 
 <div class="card" style="margin-top:12px">
-<div id="output">Yahan Hindi news script aayegi…</div>
+<div id="output">Yahan news aayegi…</div>
 </div>
 </div>
 
-<div class="footer">
-Free Open-Source AI • Fair Use
-</div>
+<div class="footer">Free Community AI • Fair Use</div>
 
 <script>
 async function generate(){
-  const s=document.getElementById("short").value.trim();
-  const l=document.getElementById("long").value.trim();
-  if(!s && !l){
-    alert("Kam se kam ek headline likhiye");
-    return;
-  }
-
-  const out=document.getElementById("output");
+  const cat=document.getElementById("category").value;
+  const count=document.getElementById("count").value;
+  const topic=document.getElementById("topic").value || cat;
   const loader=document.getElementById("loader");
-  out.textContent="";
+  const out=document.getElementById("output");
+
   loader.style.display="block";
+  out.textContent="";
+
+  const randomSeed = Date.now();
 
   const prompt = `
-आप एक भारतीय टीवी न्यूज़ एंकर हैं।
+आप एक भारतीय न्यूज़ एडिटर हैं।
 
-ब्रेकिंग हेडलाइन:
-${s}
-
-डिटेल हेडलाइन:
-${l}
+श्रेणी: ${cat}
+टॉपिक: ${topic}
+लिस्ट: Top ${count}
+समय: वर्तमान दिन
+रैंडम सीड: ${randomSeed}
 
 निर्देश:
-- पूरी तरह शुद्ध हिंदी
-- भारत की रियल न्यूज़ शैली
-- अगर सिर्फ ब्रेकिंग है → छोटा स्क्रिप्ट
-- अगर डिटेल है → लंबा स्क्रिप्ट
-- प्रोफेशनल और विश्वसनीय भाषा
+- पूरी तरह हिंदी में
+- भारत की लेटेस्ट और करंट खबरें
+- हर बार नई और अलग खबरें
+- फर्जी या पुरानी खबर न हो
+- बुलेट + हेडलाइन + 2 लाइन विवरण
 
-अब पूरी न्यूज़ स्क्रिप्ट लिखिए:
+अब Top ${count} लेटेस्ट न्यूज़ लिखिए:
 `;
 
   try{
-    const res = await fetch("https://horde.koboldai.net/api/v2/generate/text",{
+    const res=await fetch("https://horde.koboldai.net/api/v2/generate/text",{
       method:"POST",
       headers:{
         "Content-Type":"application/json",
         "accept":"application/json"
       },
       body:JSON.stringify({
-        prompt: prompt,
-        max_length: 1800,
-        temperature: 0.7,
-        top_p: 0.95
+        prompt:prompt,
+        max_length:1800,
+        temperature:0.85,
+        top_p:0.95
       })
     });
 
-    const data = await res.json();
+    const data=await res.json();
     loader.style.display="none";
 
     if(data.generations){
-      out.textContent = data.generations.map(g=>g.text).join("\n\n");
+      out.textContent=data.generations.map(g=>g.text).join("\n\n");
     }else{
-      out.textContent = "❌ Model busy hai, thodi der baad try karein";
+      out.textContent="❌ Model busy – दुबारा search करें";
     }
 
-  }catch(e){
+  }catch{
     loader.style.display="none";
-    out.textContent = "❌ Network issue – GitHub Pages par hi kaam karta hai";
+    out.textContent="❌ AI Horde busy hai – 10–20 sec baad retry karein";
   }
 }
 </script>
